@@ -92,6 +92,7 @@ Clamp
 * For Storm: serializablity (mostly don't care about Kryo optimization - just moving code here), resolution on the `CLASSPATH`
 * In general: support a specific output shape
 * => clamp project to bind again `__proxymaker__` protocol
+* One extra piece is linking to the Jython runtime
 
 
 Exposing
@@ -99,6 +100,54 @@ Exposing
 
 * Core type of Jython runtime is `PyObject`
 * due to lack of interface injection
+
+
+Example
+=======
+
+````java
+  public PyObject get(PyObject key, PyObject defaultObj) {
+     return dict_get(key, defaultObj);
+  }
+
+  @ExposedMethod(defaults = "Py.None", doc = BuiltinDocs.dict_get_doc)
+  final PyObject dict_get(PyObject key, PyObject defaultObj) {
+    PyObject o = getMap().get(key);
+    return o == null ? defaultObj : o;
+  }
+````
+
+
+Annotation processor
+====================
+
+Reusing our annotation processor, in Jython:
+
+````python
+def process_class_file(f):
+  etp = ExposedTypeProcessor(f)
+  for exposer in etp.getMethodExposers():
+    generate(exposer)
+  for exposer in etp.getDescriptorExposers():
+    generate(exposer)
+  if etp.getNewExposer():
+    generate(etp.getNewExposer())
+  generate(etp.getTypeExposer())
+  write(etp.getExposedClassName(), etp.getBytecode())
+````
+
+Use ASM
+=======
+
+````python
+def generate(exposer):
+  writer = ClassWriter(ClassWriter.COMPUTE_FRAMES)
+  exposer.generate(writer)
+  write(exposer.getClassName(), writer.toByteArray()) 
+````
+
+etc.
+
 
 Pipeline: presentations as code
 ===============================
