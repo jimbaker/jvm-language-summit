@@ -1,3 +1,10 @@
+PDF version of talk
+===================
+
+A generated version of this talk is 
+[available](https://github.com/jimbaker/jvm-language-summit/blob/master/jython-lightning-talk.pdf).
+
+
 Lightning talk for JVM Language Summit
 ======================================
 
